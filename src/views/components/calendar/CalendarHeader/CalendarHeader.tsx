@@ -24,18 +24,25 @@ import FilePngIcon from '~icons/ph/file-png';
 import FileTextIcon from '~icons/ph/file-text';
 import SidebarIcon from '~icons/ph/sidebar';
 
+import AddCustomBlockPopover from '../AddCustomBlockPopover';
+import type { CustomBlockDraft } from '../customBlockUtils';
 import { handleExportJson, saveAsCal, saveAsText, saveCalAsPng } from '../utils';
 
 export interface CalendarHeaderProps {
     sidebarOpen?: boolean;
     onSidebarToggle?: () => void;
+    onCreateBlock?: (block: CustomBlockDraft) => void | Promise<void>;
 }
 
 /**
  * Renders the header component for the calendar.
  * @returns The JSX element representing the calendar header.
  */
-export default function CalendarHeader({ sidebarOpen, onSidebarToggle }: CalendarHeaderProps): JSX.Element {
+export default function CalendarHeader({
+    sidebarOpen,
+    onSidebarToggle,
+    onCreateBlock,
+}: CalendarHeaderProps): JSX.Element {
     const activeSchedule = useActiveSchedule();
     const lastCheckedText = useRelativeTime(activeSchedule.lastCheckedAt);
     const [isRefreshing, setIsRefreshing] = useState(false);
@@ -195,9 +202,7 @@ export default function CalendarHeader({ sidebarOpen, onSidebarToggle }: Calenda
                             </MenuItem> */}
                         </MenuItems>
                     </Menu>
-                    {/* <Button className='invisible' color='ut-black' size='small' variant='minimal' icon={SelectionPlus}>
-                        Block
-                    </Button> */}
+                    <AddCustomBlockPopover onCreate={onCreateBlock} />
                 </div>
                 {hasRightHandSide && <Divider className='self-center' size='1.75rem' orientation='vertical' />}
                 <div className={clsx(styles.secondaryActions, 'flex items-center gap-3 ml-auto')}>
