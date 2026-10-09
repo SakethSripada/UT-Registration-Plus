@@ -65,7 +65,7 @@ export default function ShadowRootContainer({
             assignRef(ref, node);
 
             if (!node) {
-                setShadowRoot(null);
+                // Suspense can detach the ref without unmounting the host. Preserve the portal target.
                 return;
             }
 

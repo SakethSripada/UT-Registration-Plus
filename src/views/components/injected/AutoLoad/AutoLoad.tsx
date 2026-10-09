@@ -75,9 +75,8 @@ export default function AutoLoad({ addRows }: Props): JSX.Element | null {
         <div>
             {status !== AutoLoadStatus.ERROR && (
                 <div className=''>
-                    {Array.from({ length: 8 }).map(() => (
-                        // biome-ignore lint/correctness/useJsxKeyInIterable: TODO:
-                        <Skeleton style={{ marginBottom: 30 }} height={40} />
+                    {[0, 1, 2, 3, 4, 5, 6, 7].map(key => (
+                        <Skeleton key={key} style={{ marginBottom: 30 }} height={40} />
                     ))}
                 </div>
             )}
