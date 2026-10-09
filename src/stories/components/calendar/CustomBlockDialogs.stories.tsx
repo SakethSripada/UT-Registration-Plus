@@ -1,17 +1,23 @@
+import type { CustomBlock } from '@shared/types/CustomBlock';
+import { customBlockFromDraft } from '@shared/util/customBlocks';
 import type { Meta, StoryObj } from '@storybook/react-vite';
 import AddCustomBlockPopover from '@views/components/calendar/AddCustomBlockPopover';
 import CustomBlockForm from '@views/components/calendar/CustomBlockForm';
-import { type CustomBlockDraft, DEFAULT_BLOCK } from '@views/components/calendar/customBlockUtils';
+import { DEFAULT_BLOCK } from '@views/components/calendar/customBlockUtils';
 import EditCustomBlockOverlay from '@views/components/calendar/EditCustomBlockOverlay';
 import { Button } from '@views/components/common/Button';
 import Text from '@views/components/common/Text/Text';
 import { useState } from 'react';
 
-const exampleBlock = {
-    ...DEFAULT_BLOCK,
-    name: 'Longhorn Dev. Meeting',
-    days: ['Monday', 'Wednesday'],
-} satisfies CustomBlockDraft;
+const exampleBlock = customBlockFromDraft(
+    {
+        ...DEFAULT_BLOCK,
+        name: 'Longhorn Dev. Meeting',
+        days: ['Monday', 'Wednesday'],
+    },
+    'example-schedule',
+    'example-block'
+);
 
 const meta = {
     title: 'Components/Calendar/CustomBlockDialogs',
@@ -46,9 +52,7 @@ export const Editing: Story = {
 
 export const MockedOperations: Story = {
     render: () => {
-        const [blocks, setBlocks] = useState<(CustomBlockDraft & { id: string })[]>([
-            { ...exampleBlock, id: 'example-block' },
-        ]);
+        const [blocks, setBlocks] = useState<CustomBlock[]>([exampleBlock]);
         const [editing, setEditing] = useState<number | null>(null);
         const selected = editing === null ? undefined : blocks[editing];
         return (
@@ -60,7 +64,10 @@ export const MockedOperations: Story = {
                     <div className='p-spacing-5'>
                         <AddCustomBlockPopover
                             onCreate={block =>
-                                setBlocks(previous => [...previous, { ...block, id: crypto.randomUUID() }])
+                                setBlocks(previous => [
+                                    ...previous,
+                                    customBlockFromDraft(block, 'example-schedule', crypto.randomUUID()),
+                                ])
                             }
                         />
                     </div>
@@ -84,7 +91,9 @@ export const MockedOperations: Story = {
                                 onUpdate={block =>
                                     setBlocks(previous =>
                                         previous.map((value, index) =>
-                                            index === editing ? { ...value, ...block } : value
+                                            index === editing
+                                                ? customBlockFromDraft(block, 'example-schedule', value.id)
+                                                : value
                                         )
                                     )
                                 }

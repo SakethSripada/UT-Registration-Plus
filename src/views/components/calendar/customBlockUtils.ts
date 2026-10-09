@@ -1,15 +1,5 @@
 import type { Day } from '@shared/types/CourseMeeting';
-
-// UI values only; storage IDs and schedule ownership belong to the shared block contract.
-export interface CustomBlockDraft {
-    name: string;
-    days: Day[];
-    startTime: number;
-    endTime: number;
-    allDay: boolean;
-    syncAcrossAllSchedules: boolean;
-    conflictHighlight: boolean;
-}
+import type { CustomBlockDraft } from '@shared/types/CustomBlock';
 
 export const BLOCK_DAYS = [
     'Monday',

@@ -1,5 +1,7 @@
 import { Checkbox, Field, Fieldset, Label } from '@headlessui/react';
 import { DAY_MAP } from '@shared/types/CourseMeeting';
+import type { CustomBlock, CustomBlockDraft } from '@shared/types/CustomBlock';
+import { customBlockToDraft } from '@shared/util/customBlocks';
 import { Button } from '@views/components/common/Button';
 import Divider from '@views/components/common/Divider';
 import Input from '@views/components/common/Input';
@@ -18,10 +20,10 @@ import ProhibitIcon from '~icons/ph/prohibit';
 import TrashIcon from '~icons/ph/trash';
 import XIcon from '~icons/ph/x';
 import styles from './CustomBlockForm.module.scss';
-import { BLOCK_DAYS, type CustomBlockDraft, DEFAULT_BLOCK, formatBlockTime, parseBlockTime } from './customBlockUtils';
+import { BLOCK_DAYS, DEFAULT_BLOCK, formatBlockTime, parseBlockTime } from './customBlockUtils';
 
 interface Props {
-    block?: CustomBlockDraft;
+    block?: CustomBlock;
     onSave: (block: CustomBlockDraft) => void | Promise<void>;
     onClose: () => void;
     onDelete?: () => void | Promise<void>;
@@ -105,7 +107,7 @@ function BlockTimeInput({
 }
 
 export default function CustomBlockForm({ block, onSave, onClose, onDelete }: Props) {
-    const [draft, setDraft] = useState<CustomBlockDraft>(block ?? DEFAULT_BLOCK);
+    const [draft, setDraft] = useState<CustomBlockDraft>(() => (block ? customBlockToDraft(block) : DEFAULT_BLOCK));
     const [startTime, setStartTime] = useState(formatBlockTime(draft.startTime));
     const [endTime, setEndTime] = useState(formatBlockTime(draft.endTime));
     const [renaming, setRenaming] = useState(false);

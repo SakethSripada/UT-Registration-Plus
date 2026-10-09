@@ -1,14 +1,14 @@
 import { Popover, PopoverButton, PopoverPanel } from '@headlessui/react';
 import { OptionsStore } from '@shared/storage/OptionsStore';
+import type { CustomBlockDraft } from '@shared/types/CustomBlock';
 import { Button } from '@views/components/common/Button';
 import { ExtensionRootWrapper } from '@views/components/common/ExtensionRoot/ExtensionRoot';
 import clsx from 'clsx';
 import SelectionPlusIcon from '~icons/ph/selection-plus';
 import CustomBlockForm from './CustomBlockForm';
-import type { CustomBlockDraft } from './customBlockUtils';
 
 interface Props {
-    onCreate?: (block: CustomBlockDraft) => void | Promise<void>;
+    onCreate: (block: CustomBlockDraft) => void | Promise<void>;
 }
 
 export default function AddCustomBlockPopover({ onCreate }: Props) {
@@ -28,7 +28,7 @@ export default function AddCustomBlockPopover({ onCreate }: Props) {
                         'transition data-[closed]:(opacity-0 scale-95) data-[enter]:(ease-out-expo duration-150) data-[leave]:(ease-out duration-50)'
                 )}
             >
-                {({ close }) => <CustomBlockForm onSave={draft => onCreate?.(draft)} onClose={close} />}
+                {({ close }) => <CustomBlockForm onSave={onCreate} onClose={close} />}
             </PopoverPanel>
         </Popover>
     );

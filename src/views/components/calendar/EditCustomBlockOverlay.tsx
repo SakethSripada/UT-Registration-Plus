@@ -1,9 +1,9 @@
 import { FocusTrap } from '@headlessui/react';
+import type { CustomBlock, CustomBlockDraft } from '@shared/types/CustomBlock';
 import CustomBlockForm from './CustomBlockForm';
-import type { CustomBlockDraft } from './customBlockUtils';
 
 interface Props {
-    block: CustomBlockDraft;
+    block: CustomBlock;
     onUpdate: (block: CustomBlockDraft) => void | Promise<void>;
     onDelete: () => void | Promise<void>;
     onClose: () => void;
