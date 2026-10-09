@@ -8,7 +8,7 @@ import Input from '@views/components/common/Input';
 import Text from '@views/components/common/Text/Text';
 import clsx from 'clsx';
 import type { ComponentType, FormEvent, SVGProps } from 'react';
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useId, useRef, useState } from 'react';
 import ArrowsCounterClockwiseIcon from '~icons/ph/arrows-counter-clockwise';
 import CalendarBlankIcon from '~icons/ph/calendar-blank';
 import CheckIcon from '~icons/ph/check';
@@ -117,6 +117,8 @@ export default function CustomBlockForm({ block, initialDraft, onSave, onClose, 
     const nameBeforeRename = useRef(draft.name);
     const [busy, setBusy] = useState(false);
     const [error, setError] = useState('');
+    const [submitted, setSubmitted] = useState(false);
+    const validationId = useId();
     const mounted = useRef(true);
     useEffect(() => {
         mounted.current = true;
@@ -126,10 +128,17 @@ export default function CustomBlockForm({ block, initialDraft, onSave, onClose, 
     }, []);
     const startMinutes = parseBlockTime(startTime);
     const endMinutes = parseBlockTime(endTime);
-    const valid =
-        draft.name.trim().length > 0 &&
-        draft.days.length > 0 &&
-        (draft.allDay || (startMinutes !== null && endMinutes !== null && startMinutes < endMinutes));
+    const validationErrors: string[] = [];
+    if (!draft.name.trim()) validationErrors.push('Enter a block name.');
+    if (!draft.days.length) validationErrors.push('Select at least one day.');
+    if (!draft.allDay) {
+        if (startMinutes === null) validationErrors.push('Enter a valid start time, such as 8:03am.');
+        if (endMinutes === null) validationErrors.push('Enter a valid end time, such as 1:09pm.');
+        if (startMinutes !== null && endMinutes !== null && startMinutes >= endMinutes) {
+            validationErrors.push('End time must be after start time.');
+        }
+    }
+    const showValidation = submitted && validationErrors.length > 0;
     const daysText = Object.entries(DAY_MAP)
         .filter(([, day]) => draft.days.includes(day))
         .map(([short]) => short)
@@ -157,7 +166,8 @@ export default function CustomBlockForm({ block, initialDraft, onSave, onClose, 
     };
     const submit = (event: FormEvent) => {
         event.preventDefault();
-        if (!valid) return;
+        setSubmitted(true);
+        if (validationErrors.length) return;
         void perform(() =>
             onSave({
                 ...draft,
@@ -170,7 +180,11 @@ export default function CustomBlockForm({ block, initialDraft, onSave, onClose, 
     };
 
     return (
-        <form onSubmit={submit} aria-label={block ? 'Edit custom block' : 'Create custom block'}>
+        <form
+            onSubmit={submit}
+            aria-label={block ? 'Edit custom block' : 'Create custom block'}
+            aria-describedby={showValidation ? validationId : undefined}
+        >
             <Fieldset as='fieldset' disabled={busy} className='m-0 min-w-0 border-0 p-0'>
                 {block && (
                     <div className='flex flex-col gap-spacing-5 pb-spacing-6'>
@@ -330,6 +344,21 @@ export default function CustomBlockForm({ block, initialDraft, onSave, onClose, 
                             {error}
                         </Text>
                     )}
+                    {showValidation && (
+                        <Text
+                            as='div'
+                            variant='small'
+                            id={validationId}
+                            role='alert'
+                            className='rounded border border-theme-red/20 bg-theme-red/5 px-spacing-5 py-spacing-4 text-theme-red'
+                        >
+                            <ul className='m-0 list-disc space-y-1 pl-4'>
+                                {validationErrors.map(message => (
+                                    <li key={message}>{message}</li>
+                                ))}
+                            </ul>
+                        </Text>
+                    )}
                     <div className='flex justify-end gap-spacing-5'>
                         <Button color='ut-burntorange' variant='minimal' onClick={onClose}>
                             {block ? 'Discard Changes' : 'Cancel'}
@@ -338,7 +367,7 @@ export default function CustomBlockForm({ block, initialDraft, onSave, onClose, 
                             color={block ? 'ut-burntorange' : 'ut-green'}
                             icon={block ? CheckIcon : PlusIcon}
                             type='submit'
-                            disabled={!valid}
+                            disabled={busy}
                         >
                             {block ? 'Save' : 'Add Block'}
                         </Button>

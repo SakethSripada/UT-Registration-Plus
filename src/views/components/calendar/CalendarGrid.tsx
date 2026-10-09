@@ -13,9 +13,10 @@ import {
     GRID_DEFAULT_START,
 } from '@views/hooks/useFlattenedCourseSchedule';
 import type React from 'react';
-import { Fragment } from 'react';
+import { Fragment, useRef } from 'react';
 import CalendarBlockCreator from './CalendarBlockCreator';
 import CalendarCustomBlockCell from './CalendarCustomBlockCell';
+import { CalendarGridBounds } from './CalendarGridBounds';
 import CalendarCell from './CalendarGridCell';
 import { type CalendarLayoutCell, calculateCourseCellColumns, calendarCellPosition } from './calendarLayout';
 
@@ -79,6 +80,7 @@ export default function CalendarGrid({
     startMinutes,
     endMinutes,
 }: React.PropsWithChildren<Props>): React.JSX.Element {
+    const gridRef = useRef<HTMLDivElement>(null);
     // there was a huge mishap with 6 am start time calc here and now it is smoothly done
     // let's try to keep our codebase organized and not so all over the place
     const visualStartHour = Math.floor((startMinutes ?? GRID_DEFAULT_START) / 60);
@@ -109,6 +111,7 @@ export default function CalendarGrid({
 
     return (
         <div
+            ref={gridRef}
             className='grid h-full'
             style={{
                 gridTemplateColumns: `auto auto repeat(${days.length}, minmax(0, 1fr))`,
@@ -141,33 +144,35 @@ export default function CalendarGrid({
             <div className='h-4 w-4 self-end border-b border-r border-gray-300' />
 
             {hoursOfDay.map((_, i) => makeGridRow(i, days.length, hoursOfDay))}
-            {onCreateBlock &&
-                days.map((_, index) => {
-                    const day = Object.values(DAY_MAP)[index];
-                    return (
-                        day && (
-                            <CalendarBlockCreator
-                                key={day}
-                                day={day}
-                                dayIndex={index}
-                                start={visualStartHour * 60}
-                                end={visualEndHour * 60}
-                                onCreate={onCreateBlock}
-                            />
-                        )
-                    );
-                })}
+            <CalendarGridBounds.Provider value={gridRef}>
+                {onCreateBlock &&
+                    days.map((_, index) => {
+                        const day = Object.values(DAY_MAP)[index];
+                        return (
+                            day && (
+                                <CalendarBlockCreator
+                                    key={day}
+                                    day={day}
+                                    dayIndex={index}
+                                    start={visualStartHour * 60}
+                                    end={visualEndHour * 60}
+                                    onCreate={onCreateBlock}
+                                />
+                            )
+                        );
+                    })}
 
-            <ColorPickerProvider>
-                <AccountForCourseConflicts
-                    courseCells={courseCells ?? []}
-                    blockCells={blockCells}
-                    totalRows={totalRows}
-                    setCourse={setCourse}
-                    onEditBlock={onEditBlock}
-                    renderBlockEditor={renderBlockEditor}
-                />
-            </ColorPickerProvider>
+                <ColorPickerProvider>
+                    <AccountForCourseConflicts
+                        courseCells={courseCells ?? []}
+                        blockCells={blockCells}
+                        totalRows={totalRows}
+                        setCourse={setCourse}
+                        onEditBlock={onEditBlock}
+                        renderBlockEditor={renderBlockEditor}
+                    />
+                </ColorPickerProvider>
+            </CalendarGridBounds.Provider>
         </div>
     );
 }

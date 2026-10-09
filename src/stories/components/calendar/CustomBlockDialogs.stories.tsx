@@ -7,9 +7,7 @@ import CustomBlockForm from '@views/components/calendar/CustomBlockForm';
 import CustomBlockPopover from '@views/components/calendar/CustomBlockPopover';
 import { DEFAULT_BLOCK } from '@views/components/calendar/customBlockUtils';
 import Text from '@views/components/common/Text/Text';
-import { type CalendarGridCourse, convertMinutesToIndex } from '@views/hooks/useFlattenedCourseSchedule';
 import { useState } from 'react';
-import { ExampleCourse } from '../PopupCourseBlock.stories';
 
 const exampleBlock = customBlockFromDraft(
     {
@@ -20,22 +18,6 @@ const exampleBlock = customBlockFromDraft(
     'example-schedule',
     'example-block'
 );
-
-const exampleCourseCell: CalendarGridCourse = {
-    course: ExampleCourse,
-    async: false,
-    calendarGridPoint: {
-        dayIndex: 0,
-        startIndex: convertMinutesToIndex(510),
-        endIndex: convertMinutesToIndex(570),
-    },
-    componentProps: {
-        courseDeptAndInstr: 'Overlapping course',
-        timeAndLocation: '8:30am – 9:30am',
-        status: ExampleCourse.status,
-        blockData: {} as CalendarGridCourse,
-    },
-};
 
 const meta = {
     title: 'Components/Calendar/CustomBlockDialogs',
@@ -89,7 +71,6 @@ export const MockedOperations: Story = {
                     </div>
                     <div className='min-h-0 flex-1 p-spacing-5'>
                         <CalendarGrid
-                            courseCells={[exampleCourseCell]}
                             onCreateBlock={draft =>
                                 setBlocks(previous => [
                                     ...previous,
@@ -122,18 +103,4 @@ export const MockedOperations: Story = {
             </div>
         );
     },
-};
-
-export const FailedSave: Story = {
-    render: () => (
-        <div className='w-[455px] rounded border border-ut-offwhite/50 bg-white px-spacing-7 py-spacing-6'>
-            <CustomBlockForm
-                block={exampleBlock}
-                onClose={() => undefined}
-                onSave={async () => {
-                    throw new Error('Mock save failure');
-                }}
-            />
-        </div>
-    ),
 };

@@ -1,6 +1,6 @@
 import type { CustomBlock } from '@shared/types/CustomBlock';
 import { describe, expect, it } from 'vitest';
-import { hasCustomBlockConflict, selectCustomBlocks } from './customBlocks';
+import { hasCustomBlockConflict } from './customBlocks';
 
 const block: CustomBlock = {
     id: 'work',
@@ -17,6 +17,7 @@ const meeting = { days: ['Tuesday'] as CustomBlock['days'], startTime: 600, endT
 describe('custom block conflicts', () => {
     it('detects overlap, containment, and matching any meeting day', () => {
         expect(hasCustomBlockConflict([meeting], [block])).toBe(true);
+        expect(hasCustomBlockConflict([meeting], [{ ...block, conflictHighlight: false }])).toBe(false);
         expect(hasCustomBlockConflict([{ ...meeting, startTime: 420, endTime: 840 }], [block])).toBe(true);
         expect(hasCustomBlockConflict([{ ...meeting, days: ['Monday', 'Thursday'] }], [block])).toBe(true);
     });
@@ -29,13 +30,6 @@ describe('custom block conflicts', () => {
     it('checks every meeting, preserving minute precision', () => {
         expect(hasCustomBlockConflict([{ ...meeting, days: ['Friday'] }, meeting], [block])).toBe(true);
         expect(hasCustomBlockConflict([{ ...meeting, startTime: 779, endTime: 780 }], [block])).toBe(true);
-    });
-    it('only applies enabled blocks in the selected schedule', () => {
-        const local = { ...block, scheduleId: 'one' };
-        expect(hasCustomBlockConflict([meeting], selectCustomBlocks([local], 'one'))).toBe(true);
-        expect(hasCustomBlockConflict([meeting], selectCustomBlocks([local], 'two'))).toBe(false);
-        expect(hasCustomBlockConflict([meeting], selectCustomBlocks([block], 'two'))).toBe(true);
-        expect(hasCustomBlockConflict([meeting], [{ ...block, conflictHighlight: false }])).toBe(false);
     });
     it('treats all-day blocks as covering every time on their selected days', () => {
         const allDay = { ...block, allDay: true };

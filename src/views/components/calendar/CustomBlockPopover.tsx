@@ -2,15 +2,32 @@ import { PopoverPanel } from '@headlessui/react';
 import { OptionsStore } from '@shared/storage/OptionsStore';
 import { ExtensionRootWrapper } from '@views/components/common/ExtensionRoot/ExtensionRoot';
 import clsx from 'clsx';
-import type { ComponentProps } from 'react';
+import { type ComponentProps, useContext } from 'react';
+import { CalendarGridBounds } from './CalendarGridBounds';
 import CustomBlockForm from './CustomBlockForm';
+
+function BlockPanel({ style, ...props }: ComponentProps<typeof ExtensionRootWrapper>) {
+    const grid = useContext(CalendarGridBounds)?.current;
+    const bounds = (grid?.closest('#calendar-content') ?? grid)?.getBoundingClientRect();
+    const left = typeof style?.left === 'number' ? style.left : Number.parseFloat(String(style?.left));
+    // Floating placement flips against the viewport; keep a flipped panel clear of the calendar sidebar too.
+    const panelStyle =
+        bounds && Number.isFinite(left)
+            ? {
+                  ...style,
+                  left: Math.max(left, bounds.left + window.scrollX),
+                  maxWidth: Math.min(bounds.width, window.innerWidth - bounds.left - 16),
+              }
+            : style;
+    return <ExtensionRootWrapper {...props} style={panelStyle} />;
+}
 
 /** The owning PopoverButton anchors the form beside its block and handles dismissal. */
 export default function CustomBlockPopover(props: ComponentProps<typeof CustomBlockForm>) {
     const reducedMotion = OptionsStore.useStore(store => store.enableReducedMotion);
     return (
         <PopoverPanel
-            as={ExtensionRootWrapper}
+            as={BlockPanel}
             anchor={{ to: 'right start', gap: 8, padding: 16 }}
             transition={!reducedMotion}
             role='dialog'

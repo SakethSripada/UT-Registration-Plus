@@ -12,7 +12,11 @@ import {
 } from 'src/stories/injected/mocked';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
+// These tests exercise calendar data and layout, not shadow-root stylesheet installation.
+vi.mock('@views/components/common/ExtensionRoot/ShadowRootContainer', () => ({ ensureShadowStyles: vi.fn() }));
+
 import type { CalendarCourseCellProps } from './CalendarCourseCell';
+import { calendarCellPosition } from './calendarLayout';
 import {
     allDatesInRanges,
     calculateCourseCellColumns,
@@ -679,4 +683,18 @@ describe('calculateCourseCellColumns', () => {
 
         expect(cells).toEqual(expectedCells);
     });
+});
+
+// Blocks share the course layout; retain coverage for their additional minute precision.
+it('positions custom blocks at exact minutes and fills the grid for all-day blocks', () => {
+    const cell = { async: false, calendarGridPoint: { dayIndex: 0, startIndex: 3.1, endIndex: 5.3 } };
+    const position = calendarCellPosition(cell, 26);
+    expect(Number.parseFloat(position.top)).toBeCloseTo((3 / 780) * 100);
+    expect(Number.parseFloat(position.height)).toBeCloseTo((66 / 780) * 100);
+    expect(
+        calendarCellPosition(
+            { ...cell, calendarGridPoint: { ...cell.calendarGridPoint, startIndex: 3, endIndex: 29 } },
+            26
+        )
+    ).toEqual({ top: '0%', height: '100%', left: '0%', width: '100%' });
 });
