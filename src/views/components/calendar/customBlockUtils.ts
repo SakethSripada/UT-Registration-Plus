@@ -1,6 +1,10 @@
 import type { Day } from '@shared/types/CourseMeeting';
 import type { CustomBlockDraft } from '@shared/types/CustomBlock';
 
+export function minuteAtPosition(offset: number, height: number, start: number, end: number): number {
+    return Math.min(end - 1, Math.max(start, Math.round(start + (offset / height) * (end - start))));
+}
+
 export const BLOCK_DAYS = [
     'Monday',
     'Tuesday',

@@ -4,6 +4,10 @@ import { convertMinutesToIndex, GRID_DEFAULT_START } from '../useFlattenedCourse
 
 describe('useFlattenedCourseSchedule', () => {
     describe('convertMinutesToIndex', () => {
+        it('preserves minute precision with default and dynamic grid starts', () => {
+            expect(convertMinutesToIndex(483)).toBeCloseTo(3.1);
+            expect(convertMinutesToIndex(483, 360)).toBeCloseTo(7.1);
+        });
         it('should use 8 AM as the default grid start', () => {
             const minutes = 480; // 8:00 AM
             // (480 - 480) / 30 + 2 + 1 = 3

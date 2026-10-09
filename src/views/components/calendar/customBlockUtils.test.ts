@@ -1,7 +1,14 @@
 import { describe, expect, it } from 'vitest';
-import { formatBlockTime, parseBlockTime } from './customBlockUtils';
+import { formatBlockTime, minuteAtPosition, parseBlockTime } from './customBlockUtils';
 
 describe('custom block times', () => {
+    it('maps drags to the nearest minute and clamps them to the visible day', () => {
+        expect(minuteAtPosition(3, 780, 480, 1260)).toBe(483);
+        expect(minuteAtPosition(-10, 780, 480, 1260)).toBe(480);
+        expect(minuteAtPosition(900, 780, 480, 1260)).toBe(1259);
+        expect(minuteAtPosition(800, 1440, 0, 1440)).toBe(800);
+        expect(minuteAtPosition(1500, 1440, 0, 1440)).toBe(1439);
+    });
     it('preserves every minute through the input conversion', () => {
         for (let minutes = 0; minutes < 1440; minutes++) {
             expect(parseBlockTime(formatBlockTime(minutes))).toBe(minutes);

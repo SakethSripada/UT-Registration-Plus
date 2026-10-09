@@ -1,4 +1,4 @@
-import { DAY_MAP } from '@shared/types/CourseMeeting';
+import { type CourseMeeting, DAY_MAP } from '@shared/types/CourseMeeting';
 import type { CustomBlock, CustomBlockDraft } from '@shared/types/CustomBlock';
 
 const validTime = (time: number) => Number.isInteger(time) && time >= 0 && time < 1440;
@@ -31,4 +31,20 @@ export function customBlockToDraft(block: CustomBlock): CustomBlockDraft {
 
 export function selectCustomBlocks(blocks: CustomBlock[], scheduleId: string): CustomBlock[] {
     return blocks.filter(block => block.scheduleId === null || block.scheduleId === scheduleId);
+}
+
+/** Call with the blocks applicable to the active schedule. Adjacent times do not overlap. */
+export function hasCustomBlockConflict(
+    meetings: Pick<CourseMeeting, 'days' | 'startTime' | 'endTime'>[],
+    blocks: CustomBlock[]
+): boolean {
+    return blocks.some(
+        block =>
+            block.conflictHighlight &&
+            meetings.some(
+                meeting =>
+                    block.days.some(day => meeting.days.includes(day)) &&
+                    (block.allDay || (block.startTime < meeting.endTime && block.endTime > meeting.startTime))
+            )
+    );
 }

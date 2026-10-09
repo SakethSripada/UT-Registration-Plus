@@ -24,6 +24,7 @@ import { BLOCK_DAYS, DEFAULT_BLOCK, formatBlockTime, parseBlockTime } from './cu
 
 interface Props {
     block?: CustomBlock;
+    initialDraft?: CustomBlockDraft;
     onSave: (block: CustomBlockDraft) => void | Promise<void>;
     onClose: () => void;
     onDelete?: () => void | Promise<void>;
@@ -106,8 +107,10 @@ function BlockTimeInput({
     );
 }
 
-export default function CustomBlockForm({ block, onSave, onClose, onDelete }: Props) {
-    const [draft, setDraft] = useState<CustomBlockDraft>(() => (block ? customBlockToDraft(block) : DEFAULT_BLOCK));
+export default function CustomBlockForm({ block, initialDraft, onSave, onClose, onDelete }: Props) {
+    const [draft, setDraft] = useState<CustomBlockDraft>(() =>
+        block ? customBlockToDraft(block) : (initialDraft ?? DEFAULT_BLOCK)
+    );
     const [startTime, setStartTime] = useState(formatBlockTime(draft.startTime));
     const [endTime, setEndTime] = useState(formatBlockTime(draft.endTime));
     const [renaming, setRenaming] = useState(false);
@@ -146,8 +149,10 @@ export default function CustomBlockForm({ block, onSave, onClose, onDelete }: Pr
             await action();
             if (mounted.current) onClose();
         } catch {
-            setError('Unable to save your changes. Please try again.');
-            setBusy(false);
+            if (mounted.current) {
+                setError('Unable to save your changes. Please try again.');
+                setBusy(false);
+            }
         }
     };
     const submit = (event: FormEvent) => {

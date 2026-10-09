@@ -28,7 +28,7 @@ export default function AddCustomBlockPopover({ onCreate }: Props) {
                         'transition data-[closed]:(opacity-0 scale-95) data-[enter]:(ease-out-expo duration-150) data-[leave]:(ease-out duration-50)'
                 )}
             >
-                {({ close }) => <CustomBlockForm onSave={onCreate} onClose={close} />}
+                {({ open, close }) => <CustomBlockForm key={String(open)} onSave={onCreate} onClose={close} />}
             </PopoverPanel>
         </Popover>
     );

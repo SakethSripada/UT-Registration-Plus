@@ -2,12 +2,14 @@ import type { CustomBlock } from '@shared/types/CustomBlock';
 import { customBlockFromDraft } from '@shared/util/customBlocks';
 import type { Meta, StoryObj } from '@storybook/react-vite';
 import AddCustomBlockPopover from '@views/components/calendar/AddCustomBlockPopover';
+import CalendarGrid from '@views/components/calendar/CalendarGrid';
 import CustomBlockForm from '@views/components/calendar/CustomBlockForm';
+import CustomBlockPopover from '@views/components/calendar/CustomBlockPopover';
 import { DEFAULT_BLOCK } from '@views/components/calendar/customBlockUtils';
-import EditCustomBlockOverlay from '@views/components/calendar/EditCustomBlockOverlay';
-import { Button } from '@views/components/common/Button';
 import Text from '@views/components/common/Text/Text';
+import { type CalendarGridCourse, convertMinutesToIndex } from '@views/hooks/useFlattenedCourseSchedule';
 import { useState } from 'react';
+import { ExampleCourse } from '../PopupCourseBlock.stories';
 
 const exampleBlock = customBlockFromDraft(
     {
@@ -18,6 +20,22 @@ const exampleBlock = customBlockFromDraft(
     'example-schedule',
     'example-block'
 );
+
+const exampleCourseCell: CalendarGridCourse = {
+    course: ExampleCourse,
+    async: false,
+    calendarGridPoint: {
+        dayIndex: 0,
+        startIndex: convertMinutesToIndex(510),
+        endIndex: convertMinutesToIndex(570),
+    },
+    componentProps: {
+        courseDeptAndInstr: 'Overlapping course',
+        timeAndLocation: '8:30am – 9:30am',
+        status: ExampleCourse.status,
+        blockData: {} as CalendarGridCourse,
+    },
+};
 
 const meta = {
     title: 'Components/Calendar/CustomBlockDialogs',
@@ -53,53 +71,52 @@ export const Editing: Story = {
 export const MockedOperations: Story = {
     render: () => {
         const [blocks, setBlocks] = useState<CustomBlock[]>([exampleBlock]);
-        const [editing, setEditing] = useState<number | null>(null);
-        const selected = editing === null ? undefined : blocks[editing];
         return (
-            <div className='flex h-[650px] w-[900px] max-w-[95vw] border border-ut-offwhite/50'>
+            <div className='flex h-[650px] w-[1100px] max-w-[95vw] border border-ut-offwhite/50'>
                 <aside className='w-40 shrink-0 border-r border-ut-offwhite/50 p-spacing-5'>
                     <Text>Schedule sidebar</Text>
                 </aside>
                 <div className='min-w-0 flex flex-1 flex-col'>
                     <div className='p-spacing-5'>
                         <AddCustomBlockPopover
-                            onCreate={block =>
+                            onCreate={draft =>
                                 setBlocks(previous => [
                                     ...previous,
-                                    customBlockFromDraft(block, 'example-schedule', crypto.randomUUID()),
+                                    customBlockFromDraft(draft, 'example-schedule', crypto.randomUUID()),
                                 ])
                             }
                         />
                     </div>
-                    <div className='relative min-h-0 flex-1 p-spacing-5'>
-                        <div className='flex flex-col gap-spacing-3'>
-                            {blocks.map((block, index) => (
-                                <Button
-                                    key={block.id}
-                                    color='ut-black'
-                                    variant='outline'
-                                    onClick={() => setEditing(index)}
-                                >
-                                    {block.name}
-                                </Button>
-                            ))}
-                        </div>
-                        {selected && (
-                            <EditCustomBlockOverlay
-                                block={selected}
-                                onClose={() => setEditing(null)}
-                                onUpdate={block =>
-                                    setBlocks(previous =>
-                                        previous.map((value, index) =>
-                                            index === editing
-                                                ? customBlockFromDraft(block, 'example-schedule', value.id)
-                                                : value
+                    <div className='min-h-0 flex-1 p-spacing-5'>
+                        <CalendarGrid
+                            courseCells={[exampleCourseCell]}
+                            onCreateBlock={draft =>
+                                setBlocks(previous => [
+                                    ...previous,
+                                    customBlockFromDraft(draft, 'example-schedule', crypto.randomUUID()),
+                                ])
+                            }
+                            customBlocks={blocks}
+                            setCourse={() => undefined}
+                            renderBlockEditor={(block, close) => (
+                                <CustomBlockPopover
+                                    block={block}
+                                    onClose={close}
+                                    onSave={draft =>
+                                        setBlocks(previous =>
+                                            previous.map(value =>
+                                                value.id === block.id
+                                                    ? customBlockFromDraft(draft, 'example-schedule', value.id)
+                                                    : value
+                                            )
                                         )
-                                    )
-                                }
-                                onDelete={() => setBlocks(previous => previous.filter((_, index) => index !== editing))}
-                            />
-                        )}
+                                    }
+                                    onDelete={() =>
+                                        setBlocks(previous => previous.filter(value => value.id !== block.id))
+                                    }
+                                />
+                            )}
+                        />
                     </div>
                 </div>
             </div>
